@@ -97,8 +97,8 @@ class GANmut:
         # plt.imshow(face_g)
 
         # Histogram matching
+        multi = True if face_g.shape[-1] > 1 else False
         matched = exposure.match_histograms(face_g, img_rgb, multichannel=multi)
-
         # insert edited face in original image
         img_rgb[yy : yy + h, xx : xx + w] = cv2.resize(matched, (w, h)) * 255
 
