@@ -6,6 +6,7 @@ import dlib
 import matplotlib.pyplot as plt
 import torch
 import cv2
+from skimage import exposure
 from imutils.face_utils import rect_to_bb
 import numpy as np
 
@@ -95,8 +96,11 @@ class GANmut:
         # plt.title('Edited face')
         # plt.imshow(face_g)
 
+        # Histogram matching
+        matched = exposure.match_histograms(face_g, img, multichannel=multi)
+
         # insert edited face in original image
-        img_rgb[yy : yy + h, xx : xx + w] = cv2.resize(face_g, (w, h)) * 255
+        img_rgb[yy : yy + h, xx : xx + w] = cv2.resize(matched, (w, h)) * 255
 
         plt.figure()
         plt.title("Edited image")
