@@ -107,8 +107,11 @@ class GANmut:
         # Convert skimage to open-cv compatible
         matched_cv = img_as_ubyte(matched)
 
+        # Inverse image
+        non_negative = cv2.bitwise_not(matched_cv)
+
         # insert edited face in original image
-        img_rgb[yy : yy + h, xx : xx + w] = cv2.resize(matched_cv, (w, h)) * 255
+        img_rgb[yy : yy + h, xx : xx + w] = cv2.resize(non_negative, (w, h)) * 255
 
         plt.figure()
         plt.title("Edited image")
