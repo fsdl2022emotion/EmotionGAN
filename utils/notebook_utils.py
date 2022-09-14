@@ -98,7 +98,7 @@ class GANmut:
 
         # Convert open-cv to sk-image compatible
         face_g_sk = img_as_float(face_g)
-        img_rgb_sk = img_as_float(img_rgb)
+        img_rgb_sk = img_as_float(face)
 
         # Histogram matching
         multi = True if face_g.shape[-1] > 1 else False
