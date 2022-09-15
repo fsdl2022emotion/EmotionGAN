@@ -105,7 +105,7 @@ class GANmut:
 
         img_rgb[yy : yy + h, xx : xx + w] = matched_resized *255
         plt.figure()
-        plt.title("img_rgb")
+        plt.title("Edited image")
         plt.imshow(img_rgb)
 
         if save:
