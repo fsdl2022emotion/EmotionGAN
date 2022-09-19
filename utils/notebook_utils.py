@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import torch
 import cv2
 from skimage import exposure, img_as_float, img_as_ubyte
+from skimage.transform import resize
 from imutils.face_utils import rect_to_bb
 import numpy as np
 
@@ -49,17 +50,16 @@ class GANmut:
 
         img = cv2.imread(img_path, 1)  # BGR
         img_rgb = img[:, :, [2, 1, 0]]
-        # plt.title('Original Image')
-        # plt.imshow(img_rgb)
+        plt.title('Original Image')
+        plt.imshow(img_rgb)
 
         # extract face
         det = self.detector(img, 1)[0]
         (xx, yy, w, h) = rect_to_bb(det)
         face = cv2.resize(img[yy : yy + h, xx : xx + w], (128, 128))
 
-        # plt.figure()
-        # plt.title('Detected face')
-        # plt.imshow(face[:, :, [2, 1, 0]])
+        # save this format for histogram matching
+        face_hwc = face[:,:,[2,1,0]]
 
         # adapt image format for G
         face = face.transpose((2, 0, 1))  # [H,W,C] --> [C,H,W]
@@ -89,30 +89,21 @@ class GANmut:
                 face_g = self.G(face, expr)[0][0, [2, 1, 0], :, :] / 2 + 0.5
 
         face_g = face_g.transpose(0, 2).transpose(0, 1).detach().cpu().numpy()
+        plt.figure()
+        plt.title("generated")
+        plt.imshow(face_g)
 
-        temp_g = face_g
-
-        # plt.figure()
-        # plt.title('Edited face')
-        # plt.imshow(face_g)
-
-        # Convert open-cv to sk-image compatible
+        # histogram matching
         face_g_sk = img_as_float(face_g)
-        img_rgb_sk = img_as_float(face)
-
-        # Histogram matching
+        img_rgb_sk = img_as_float(face_hwc)
         multi = True if face_g.shape[-1] > 1 else False
         matched = exposure.match_histograms(face_g_sk, img_rgb_sk, multichannel=multi)
+        matched_resized = resize(matched, (h, w))
+        plt.figure()
+        plt.title("matched_resized")
+        plt.imshow(matched_resized)
 
-        # Convert skimage to open-cv compatible
-        matched_cv = img_as_ubyte(matched)
-
-        # Inverse image
-        non_negative = cv2.bitwise_not(matched_cv)
-
-        # insert edited face in original image
-        img_rgb[yy : yy + h, xx : xx + w] = cv2.resize(non_negative, (w, h)) * 255
-
+        img_rgb[yy : yy + h, xx : xx + w] = matched_resized *255
         plt.figure()
         plt.title("Edited image")
         plt.imshow(img_rgb)
@@ -135,6 +126,7 @@ class GANmut:
             img_name = os.path.join(save_dir, img_name)
             plt.imsave(img_name, img_rgb)
             print(f"edited image saved in {img_name}")
+
 
     def emotion_edit_original(self, img_path, x=None, y=None, theta=None, rho=None, save=False):
 
