@@ -4,5 +4,4 @@ matplotlib
 numpy
 tqdm
 opencv-python
-tensorflow
 scikit-image
