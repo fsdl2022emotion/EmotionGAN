@@ -7,6 +7,7 @@ from torchvision.utils import save_image
 import torch
 import torch.nn.functional as F
 import numpy as np
+import wandb
 
 import models.model_linear_2d
 import models.model_gaussian_2d
@@ -20,6 +21,8 @@ class Solver(object):
 
         # Data loader.
         self.loader = loader
+        
+        self.config = config
 
         # Model configurations.
         self.c_dim = config.c_dim
@@ -61,6 +64,7 @@ class Solver(object):
 
         # Miscellaneous.
         self.use_tensorboard = config.use_tensorboard
+        self.use_wandb = config.use_wandb
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         print("Used device: ", self.device)
@@ -86,6 +90,8 @@ class Solver(object):
         self.build_model()
         if self.use_tensorboard:
             self.build_tensorboard()
+        if self.use_wandb:
+            self.build_wandb()
 
     def build_model(self):
         """Create a generator and a discriminator."""
@@ -149,6 +155,10 @@ class Solver(object):
         from utils.logger import Logger
 
         self.logger = Logger(self.log_dir)
+
+    def build_wandb(self):
+        """Build a wandb logger."""
+        self.logger = wandb.init(project="fsdl2022-emotion", config=self.config)
 
     def update_lr(self, g_lr, d_lr):
         """Decay learning rates of the generator and discriminator."""
@@ -252,6 +262,7 @@ class Solver(object):
         print("Start training...")
         start_time = time.time()
         for i in range(start_iter, self.num_iters):
+            wandb_dict = {}
 
             # =================================================================================== #
             #                             1. Preprocess input data                                #
@@ -525,6 +536,8 @@ class Solver(object):
                 if self.use_tensorboard:
                     for tag, value in loss.items():
                         self.logger.scalar_summary(tag, value, i + 1)
+                if self.use_wandb:
+                    wandb_dict["loss"] = loss
 
             if (i + 1) % self.sample_step == 0:
 
@@ -559,6 +572,8 @@ class Solver(object):
                             nrow=1,
                             padding=0,
                         )
+                        if self.use_wandb:
+                            wandb_dict["samples"] = wandb.Image(sample_path)
                         print(
                             "Saved real and fake images into {}...".format(sample_path)
                         )
@@ -589,6 +604,10 @@ class Solver(object):
                                 nrow=1,
                                 padding=0,
                             )
+                            if self.use_wandb:
+                                wandb_dict[f"{emotion}_samples"] = wandb.Image(sample_path)
+
+
                             print(
                                 "Saved real and fake images into {}...".format(
                                     sample_path
@@ -622,6 +641,8 @@ class Solver(object):
                             nrow=1,
                             padding=0,
                         )
+                        if self.use_wandb:
+                            wandb_dict["samples"] = wandb.Image(sample_path)
                         print(
                             "Saved real and fake images into {}...".format(sample_path)
                         )
@@ -641,4 +662,9 @@ class Solver(object):
                 g_lr -= self.g_lr / float(self.num_iters_decay)
                 d_lr -= self.d_lr / float(self.num_iters_decay)
                 self.update_lr(g_lr, d_lr)
+                wandb_dict["g_lr"] = g_lr
+                wandb_dict["d_lr"] = d_lr
                 print("Decayed learning rates, g_lr: {}, d_lr: {}.".format(g_lr, d_lr))
+            
+            if self.use_wandb:
+                wandb.log(wandb_dict)
