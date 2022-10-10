@@ -203,10 +203,10 @@ if __name__ == "__main__":
     parser.add_argument("--use_wandb", type=str2bool, default=False)
 
     # Directories.
-    parser.add_argument("--log_dir", type=str, default="GANmut/logs")
-    parser.add_argument("--model_save_dir", type=str, default="GANmut/models")
-    parser.add_argument("--sample_dir", type=str, default="GANmut/samples")
-    parser.add_argument("--result_dir", type=str, default="GANmut/results")
+    parser.add_argument("--log_dir", type=str, default="logs")
+    parser.add_argument("--model_save_dir", type=str, default="models")
+    parser.add_argument("--sample_dir", type=str, default="samples")
+    parser.add_argument("--result_dir", type=str, default="results")
 
     # Step size.
     parser.add_argument("--log_step", type=int, default=100)
