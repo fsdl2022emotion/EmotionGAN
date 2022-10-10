@@ -573,7 +573,7 @@ class Solver(object):
                             padding=0,
                         )
                         if self.use_wandb:
-                            wandb_dict["samples"] = wandb.Image(sample_path)
+                            wandb_dict["samples"] = wandb.Image(self.denorm(x_concat.data.cpu()))
                         print(
                             "Saved real and fake images into {}...".format(sample_path)
                         )
@@ -605,7 +605,7 @@ class Solver(object):
                                 padding=0,
                             )
                             if self.use_wandb:
-                                wandb_dict[f"{emotion}_samples"] = wandb.Image(sample_path)
+                                wandb_dict[f"{emotion}_samples"] = wandb.Image(self.denorm(x_concat.data.cpu()))
 
 
                             print(
@@ -642,7 +642,7 @@ class Solver(object):
                             padding=0,
                         )
                         if self.use_wandb:
-                            wandb_dict["samples"] = wandb.Image(sample_path)
+                            wandb_dict["samples"] = wandb.Image(self.denorm(x_concat.data.cpu()))
                         print(
                             "Saved real and fake images into {}...".format(sample_path)
                         )
