@@ -667,4 +667,4 @@ class Solver(object):
                 print("Decayed learning rates, g_lr: {}, d_lr: {}.".format(g_lr, d_lr))
             
             if self.use_wandb:
-                wandb.log(wandb_dict)
+                wandb.log(wandb_dict, step=i+1)
