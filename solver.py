@@ -23,6 +23,8 @@ class Solver(object):
         # Data loader.
         self.loader = loader
 
+        self.config = config
+
         # Model configurations.
         self.c_dim = config.c_dim
         self.image_size = config.image_size
@@ -63,6 +65,7 @@ class Solver(object):
 
         # Miscellaneous.
         self.use_tensorboard = config.use_tensorboard
+        self.use_wandb = config.use_wandb
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         print("Used device: ", self.device)
@@ -88,6 +91,8 @@ class Solver(object):
         self.build_model()
         if self.use_tensorboard:
             self.build_tensorboard()
+        if self.use_wandb:
+            self.build_wandb()
 
     def build_model(self):
         """Create a generator and a discriminator."""
@@ -179,6 +184,11 @@ class Solver(object):
         from utils.logger import Logger
 
         self.logger = Logger(self.log_dir)
+
+    def build_wandb(self):
+        """Build a wandb logger."""
+        import wandb
+        self.logger = wandb.init(project="fsdl2022-emotion", config=self.config)
 
     def update_lr(self, g_lr, d_lr):
         """Decay learning rates of the generator and discriminator."""
@@ -555,6 +565,8 @@ class Solver(object):
                 if self.use_tensorboard:
                     for tag, value in loss.items():
                         self.logger.scalar_summary(tag, value, i + 1)
+                if self.use_wandb:
+                    self.logger.log(loss)
 
             if (i + 1) % self.sample_step == 0:
 

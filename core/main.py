@@ -200,6 +200,7 @@ if __name__ == "__main__":
         "--mode", type=str, default="train", choices=["train", "test", "print_axes"]
     )
     parser.add_argument("--use_tensorboard", type=str2bool, default=False)
+    parser.add_argument("--use_wandb", type=str2bool, default=False)
 
     # Directories.
     parser.add_argument("--log_dir", type=str, default="GANmut/logs")
